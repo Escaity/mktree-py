@@ -32,11 +32,11 @@
    ```
 
 2. **PATH への配置**
-   スクリプトを PATH が通っているディレクトリに移動させます。
+   スクリプトを PATH が通っているディレクトリにコピーします。
 
    ```bash
    # `sudo` を使うためパスワードが必要です
-   sudo mv mktree.py /usr/local/bin/mktree
+   sudo cp mktree.py /usr/local/bin/mktree
    ```
 
 これで、新しいターミナルウィンドウを開けば、どこからでも `mktree` コマンドが使用できます。
