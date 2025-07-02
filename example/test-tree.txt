@@ -1,0 +1,15 @@
+# プロジェクトルート
+my-app/
+├── README.md              # プロジェクト説明
+├── package.json           # 依存関係
+│
+├── src/                   # ソースコード
+│   ├── main.js           # エントリーポイント
+│   ├── components/       # コンポーネント
+│   │   ├── Header.jsx
+│   │   └── Footer.jsx
+│   └── utils/            # ユーティリティ
+│       └── helpers.js
+│
+└── tests/                # テストファイル
+    └── main.test.js
