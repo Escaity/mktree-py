@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 # ==============================================================================
+# mktree.py (出力先指定機能付き)
+# ------------------------------------------------------------------------------
 # Description: 正規表現を用いてインデントを正確に計算し、
-#              ルートディレクトリを無視してディレクトリツリーを生成する。
-# Usage: python3 mktree.py <path_to_structure_file>
+#              生成先のディレクトリを指定できる最終版。
+# Usage: python3 mktree.py <structure_file> [-o <output_path>]
 # ==============================================================================
 import argparse
 import re
@@ -11,7 +13,7 @@ from pathlib import Path
 # --- 設定 ---
 INDENT_WIDTH = 4
 
-def create_structure_from_file(filepath: str):
+def create_structure_from_file(filepath: str, output_dir: str | None = None):
     """テキストファイルからディレクトリ構造を生成する"""
     try:
         with open(filepath, 'r', encoding='utf-8') as f:
@@ -23,15 +25,21 @@ def create_structure_from_file(filepath: str):
         print(f"❌ Error: An error occurred: {e}")
         return
 
-    path_stack = []
-    base_path = Path.cwd()
+    # 出力先パスが指定されていればそれを基準に、なければ現在の場所を基準にする
+    if output_dir:
+        base_path = Path(output_dir)
+        # もし指定された出力先ディレクトリが存在しなければ、それも作成する
+        base_path.mkdir(parents=True, exist_ok=True)
+        print(f"➡️  Output directory set to: {base_path.resolve()}")
+    else:
+        base_path = Path.cwd()
 
-    level_offset = 0          # 階層レベルを調整するためのオフセット値
-    first_line_processed = False # 最初の行を処理したかどうかのフラグ
+    path_stack = []
+    level_offset = 0
+    first_line_processed = False
 
     for line_num, line in enumerate(lines, 1):
         line_content = line.split('#')[0].rstrip()
-
         if not line_content.strip():
             continue
 
@@ -43,17 +51,14 @@ def create_structure_from_file(filepath: str):
         name = line_content[indentation:]
         level = indentation // INDENT_WIDTH
 
-        # 最初の有効な行の処理
         if not first_line_processed:
             first_line_processed = True
-            # もし最初の行がレベル0のディレクトリなら、それを無視してレベルオフセットを1に設定
             if level == 0 and name.endswith('/'):
                 level_offset = 1
-                continue # この行の処理をスキップして次の行へ
+                continue
 
-        # 決定されたオフセットをレベルから引く
         level -= level_offset
-        if level < 0: level = 0 # 安全装置
+        if level < 0: level = 0
 
         while len(path_stack) > level:
             path_stack.pop()
@@ -75,8 +80,19 @@ def create_structure_from_file(filepath: str):
 
     print("\n✅ Structure creation complete!")
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="テキストファイルからディレクトリ構造を生成します。")
+    # 必須の引数 (構造ファイル)
     parser.add_argument("filepath", help="ディレクトリツリーが書かれたテキストファイルのパス")
+
+    # オプションの引数 (出力先)
+    parser.add_argument(
+        "-o", "--output",
+        help="生成先のディレクトリパス。省略した場合は現在のディレクトリに作成します。",
+        default=None # デフォルトはNone（指定なし）
+    )
     args = parser.parse_args()
-    create_structure_from_file(args.filepath)
+
+    # メイン関数に引数を渡す
+    create_structure_from_file(args.filepath, args.output)
